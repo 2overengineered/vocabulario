@@ -57,18 +57,20 @@ def vocabulario(tiempo_prueba, datos_vocabulario):
         if incorrect_vocabulary_row_count < 200:
             # Choose random filename fromn 'datos_vocabulario_active' set
             csv_filename = 'datos-vocabulario/' + random.choice(list(datos_vocabulario))
-            print(csv_filename)
             
             # Determine number of rows in csv file and randomly choose a row index
             with open(csv_filename, encoding='utf8') as csv_file:
                 
                 # Read entire file into list
+                
+                csv_data = []
                 with open(csv_filename, encoding='utf8') as csv_file:
                     csv_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
-
+                    next(csv_reader) # skip the first line
+                    for row in csv_reader:
+                        csv_data.append(row)
                     # Choose random row from list and quiz
-                    random_row = random.choice(list(csv_reader))
-                    print(random_row)
+                    random_row = random.choice(csv_data)
                     
                     prueba = prueba_vocabulario(random_row[0], random_row[1], random_row[2], random_row[3], random_row[4])
                     # if incorrect add to vocabulary_incorrect to sql database 5 times a and increment vocabulary_incorrect_count

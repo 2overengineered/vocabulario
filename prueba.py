@@ -9,9 +9,6 @@ def prueba_vocabulario(palabra, word, frase, sentence, palabra_alterna):
     print(sentence)
     answer = input(re.sub(r'\b%s\b' % palabra,'_____', frase, flags=re.I) + '\n\n')
     
-    print(answer.lower().encode('utf-8'))
-    print(palabra.lower().encode('utf-8'))
-    
     if (normalize('NFC', answer).lower() == normalize('NFC', palabra).lower() or ((normalize('NFC', answer).lower()  == normalize('NFC', palabra_alterna).lower()) and answer)):
         print('correcto\n')
     else:
