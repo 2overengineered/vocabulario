@@ -1,6 +1,7 @@
 import csv
 import sqlite3
 import random
+import math
 from time import time, sleep
 
 from prueba import *
@@ -54,8 +55,15 @@ def vocabulario(tiempo_prueba, datos_vocabulario):
             
             print(incorrect_vocabulary_row_count, 'rows in vocabulary_incorrect.db\n\n')
             
-            # If there are less than 200 rows in incorrect_vocabulary sql database, quiz from data in .csv files, otherwise quiz from data in incorrect_vocabulary sql database
-            if incorrect_vocabulary_row_count < 200:
+            # Calculate a weight between 0 and 1 based on the number of entries in the SQL database
+            retest_weight = 1 - math.exp(-0.08 * incorrect_vocabulary_row_count )
+            print(retest_weight, "flag")
+            
+            # Generate a random number between 0 and 1 and select either incorrect_vocabulary.db or .csv files in datos-vocabulario directory as data source based on retest_weight
+            if random.random() >= retest_weight:
+                print(".csv flag")
+                # Use data from .csv files in datos-vocabulario directory
+                
                 # Choose random filename fromn 'datos_vocabulario_active' set
                 csv_filename = 'datos-vocabulario/' + random.choice(list(datos_vocabulario))
                 
@@ -82,22 +90,29 @@ def vocabulario(tiempo_prueba, datos_vocabulario):
                         # if increment vocabulary_correct_count
                         else: vocabulary_correct_count  += 1
             else:
-                    retest_query = 'SELECT palabra, word, frase, sentence, palabra_alterna, id FROM vocabulary ORDER BY RANDOM() LIMIT 1'
-                    res = cursor.execute(retest_query)
-                    incorrect_retest_rows = res.fetchall()
+                # Use data from  sql database
+                print("sql flag")
+                retest_query = 'SELECT palabra, word, frase, sentence, palabra_alterna, id FROM vocabulary ORDER BY RANDOM() LIMIT 1'
+                res = cursor.execute(retest_query)
+                incorrect_retest_rows = res.fetchall()
 
-                    for random_row in incorrect_retest_rows:
-                        prueba = prueba_vocabulario(random_row[0], random_row[1], random_row[2], random_row[3], random_row[4])
-                        # if incorrect add to vocabulary_incorrect to sql database 5 times a and increment vocabulary_incorrect_count
-                        if prueba:
-                            vocabulary_incorrect.append(random_row)
-                            add_incorrect_to_db(random_row[0], random_row[1], random_row[2], random_row[3], random_row[4])
-                            vocabulary_incorrect_count += 1
-                        # if increment vocabulary_correct_count
-                        else:
-                            vocabulary_correct_count  += 1
-                            # remove row from vocabulary_incorrect to sql database if correct
+                for random_row in incorrect_retest_rows:
+                    prueba = prueba_vocabulario(random_row[0], random_row[1], random_row[2], random_row[3], random_row[4])
+                    # if incorrect add to vocabulary_incorrect to sql database and increment vocabulary_incorrect_count
+                    if prueba:
+                        vocabulary_incorrect.append(random_row)
+                        add_incorrect_to_db(random_row[0], random_row[1], random_row[2], random_row[3], random_row[4])
+                        vocabulary_incorrect_count += 1
+                    # if increment vocabulary_correct_count
+                    else:
+                        vocabulary_correct_count  += 1
+                        # 1 in 5 random chance to remove row from vocabulary_incorrect to sql database if correct
+                        if random.randint(1, 5) == 1:
+                            print("removed flag")
                             cursor.execute('DELETE FROM vocabulary WHERE id = {}'.format(random_row[5]))
+                        else:
+                            print("not removed flag") #remove else statement with flag
+                
             conn.commit()
         
         except Exception as e:
@@ -114,4 +129,4 @@ def vocabulario(tiempo_prueba, datos_vocabulario):
 # open file 'datos-vocabulario/datos-vocabulario-active.csv' that contains list of active vocabulary data filenames to read and add to set 'datos_vocabulario_active'
 with open('datos-vocabulario/datos-vocabulario-active.csv', encoding='utf8') as f:
     datos_vocabulario_active = {row.strip() for row in f}
-vocabulario(10, datos_vocabulario_active)
+vocabulario(7, datos_vocabulario_active)

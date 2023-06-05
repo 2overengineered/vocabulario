@@ -36,7 +36,7 @@ def prueba_vocabulario_frase(palabra, word, frase, sentence, palabra_alterna):
         prueba_vocabulario_frase(palabra, word, frase, sentence, palabra_alterna)
         
 def add_incorrect_to_db(palabra, word, frase, sentence, palabra_alterna):
-    # adds to incorrect_vocabulary.db sql database 5 times
+    # adds to incorrect_vocabulary.db sql database
 
     # connect to incorrect_vocabulary sql database
     conn = sqlite3.connect('incorrect_vocabulary.db')
@@ -44,10 +44,10 @@ def add_incorrect_to_db(palabra, word, frase, sentence, palabra_alterna):
     cursor.execute('''CREATE TABLE IF NOT EXISTS vocabulary(id INTEGER PRIMARY KEY AUTOINCREMENT, palabra text, word text, frase text, sentence text, palabra_alterna text)''')
     
     
-    # add each item in vocabulary_incorrect to sql database 5 times
+    # add each item in vocabulary_incorrect to sql database
     
-    for i in range(0, 5):
-        query = 'INSERT INTO vocabulary (palabra, word, frase, sentence, palabra_alterna) VALUES (?, ?, ?, ?, ?)'
-        values = (palabra, word, frase, sentence, palabra_alterna)
-        cursor.execute(query, values)
+
+    query = 'INSERT INTO vocabulary (palabra, word, frase, sentence, palabra_alterna) VALUES (?, ?, ?, ?, ?)'
+    values = (palabra, word, frase, sentence, palabra_alterna)
+    cursor.execute(query, values)
     conn.commit()
